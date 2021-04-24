@@ -3,7 +3,7 @@
 import argparse
 import sys
 
-from go import Game, clear, getch
+from go import Game
 
 
 def main():
@@ -15,10 +15,8 @@ def main():
     if args.size < 7 or args.size > 19:
         sys.stdout.write('Board size must be between 7 and 19!\n')
         sys.exit(0)
-    print("Here")
-    game = Game(args.size)
-    print("Cool")
-    game.run()
+    game = Game()
+    game.run(args.size)
 
 
 if __name__ == '__main__':

@@ -2,7 +2,6 @@ class Stone(object):
     _position = (0, 0)
     _board_dimension = (0, 0)
     _color = "E"
-    _dsu_group = 0
     """
     B == BLACK
     E == EMPTY
@@ -21,7 +20,6 @@ class Stone(object):
         self._position = (int(Stone.is_available(arguments, "i")), 
                             int(Stone.is_available(arguments, "j")))
         self._color = Stone.is_available(arguments, "c")
-        self._dsu_group = self._board_dimension * self._position[0] + self._position[1]
 
     def __str__(self):
         return self._color

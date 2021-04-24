@@ -9,7 +9,7 @@ class Board(object):
     _board_history = []
     _dsu = DSU()
     _history = []
-    _deleted = []
+    _deleted = [] # array of 
 
     def is_available(self, i, j) -> bool:
         return (0 <= i and i < self._dimension) and (0 <= j and j < self._dimension)
@@ -89,7 +89,7 @@ class Board(object):
         used[i][j] = True
         breath_points = set()
         shifts = [[-1, 0], [0, -1], [1, 0], [0, 1]]
-        while len(queue):
+        while len(queue) > 0:
             cur = queue[0]
             queue.pop(0)
             for shift in shifts:
@@ -104,16 +104,30 @@ class Board(object):
         breath_points = list(breath_points)
         return breath_points
 
-    def remove_group(self, number: int):
-        for i in range(self._dimension):
-            for j in range(self._dimension):
-                if self._dsu.find_group(int(self[i, j])) == number:
-                    if self._turn == "B":
-                        self._score[0] += 1
-                    else:
-                        self._score[1] += 1
-                    self._map[i][j] = Stone(n=self._dimension, i=i, j=j, c="E")
-                    self._dsu.make_group(int(self[i, j]))
+    def remove_group(self, i, j):
+        if self[i, j].color == "E":
+            return
+        color = self[i, j].color
+        used = [[False for i in range(self._dimension)]
+                for j in range(self._dimension)]
+        queue = [[i, j]]
+        used[i][j] = True
+        shifts = [[-1, 0], [0, -1], [1, 0], [0, 1]]
+        while len(queue) > 0:
+            cur = queue[0]
+            queue.pop(0)
+            for shift in shifts:
+                ni = cur[0] + shift[0]
+                nj = cur[1] + shift[1]
+                if self.is_available(ni, nj):
+                    if self[ni, nj].color == color and not used[ni][nj]:
+                        used[ni][nj] = True
+                        queue.append([ni, nj])
+        for di in range(self._dimension):
+            for dj in range(self._dimension):
+                if used[di][dj]:
+                    self[di, dj] = Stone(n=self._dimension, i=di, j=dj, c="E")            
+        
 
     def move(self, i: int, j: int) -> str:
         i -= 1
@@ -137,33 +151,24 @@ class Board(object):
         self[i, j] = Stone(n=self._dimension, i=i, j=j, c=self._turn)
 
         shifts = [[-1, 0], [0, -1], [1, 0], [0, 1]]
-        adj_groups = set()
-        group_to_cell = {}
+        adj_groups = []
         for shift in shifts:
             adj_i = i + shift[0]
             adj_j = j + shift[1]
             if self.is_available(adj_i, adj_j) and self[adj_i, adj_j].color == opponent_color:
-                cell = int(self._map[adj_i][adj_j])
-                group = self._dsu.find_group(cell)
-                adj_groups.add(group)
-                group_to_cell[group] = [adj_i, adj_j]
-        adj_groups = list(adj_groups)
+                adj_groups.append([adj_i, adj_j])
+
         possible_can_be_killed = []
-        for group in adj_groups:
-            current_stone = group_to_cell[group]
+        for current_stone in adj_groups:
             breath_points = self.get_breath_points(*current_stone)
             if len(breath_points) == 0:
-                possible_can_be_killed.append(group_to_cell[group])
+                possible_can_be_killed.append(current_stone)
 
         own_breath_points = len(self.get_breath_points(i, j))
+
         if len(possible_can_be_killed) > 0:
             for kill_stone in possible_can_be_killed:
-                self.remove_group(self._dsu.find_group(int(self[kill_stone])))
-            for shift in shifts:
-                adj_i = i + shift[0]
-                adj_j = j + shift[1]
-                if self.is_available(adj_i, adj_j) and self[adj_i, adj_j].color == self._turn:
-                    self._dsu.union_groups(int(self[adj_i, adj_j]), int(self[i, j]))
+                self.remove_group(*kill_stone)
             self._history.append(str(self))
             self.flip_turn()
             return "success"
@@ -171,73 +176,10 @@ class Board(object):
             self[i, j] = Stone(n=self._dimension, i=i, j=j, c="E")
             return "error"
         
-        for shift in shifts:
-            adj_i = i + shift[0]
-            adj_j = j + shift[1]
-            if self.is_available(adj_i, adj_j) and self[adj_i, adj_j].color == self._turn:
-                self._dsu.union_groups(int(self[adj_i, adj_j]), int(self[i, j]))
         self._history.append(str(self))
         self.flip_turn()
         return "success"
-        """
-        shifts = [[-1, 0], [0, -1], [1, 0], [0, 1]]
-        adj_groups = set()
-        group_to_cell = {}
-        for shift in shifts:
-            adj_i = i + shift[0]
-            adj_j = j + shift[1]
-            if self.is_available(adj_i, adj_j) and self[adj_i, adj_j].color != "E":
-                cell = int(self._map[adj_i][adj_j])
-                group = self._dsu.find_group(cell)
-                adj_groups.add(group)
-                group_to_cell[group] = [adj_i, adj_j]
-
-        adj_groups = list(adj_groups)
-        print(group_to_cell)
-        
-
-        opponent_breath_points = -1
-        own_breath_points = -1
-        for group in adj_groups:
-            current_stone = group_to_cell[group]
-            if self[current_stone].color != opponent_color:
-                own_breath_points = max(own_breath_points, 
-                                        len(self.get_breath_points(*current_stone)))
-            else:
-                opponent_breath_points = max(opponent_breath_points, 
-                                            len(self.get_breath_points(*current_stone)))
-        if opponent_breath_points == 1: 
-            #oppenent groups have only one breath point -> it's current (i, j)
-            #that means that this move kills opponent groups
-            #so current player is able to make move
-            self[i, j] = Stone(n=self._dimension, i=i, j=j, c=self._turn)
-            for group in adj_groups:
-                current_stone = group_to_cell[group]
-                if self[current_stone].color != opponent_color:
-                    self._dsu.union_groups(int(self[current_stone]), int(self[i, j]))
-                else:
-                    self.remove_group(self._dsu.find_group(int(self[current_stone])))
-            self._history.append(str(self))
-            self.flip_turn()
-            return "success"
-        elif own_breath_points == 1:
-            return "error" #suicide is forbidden for go
-        
-        #there's no killed group, so that's simple move
-        self[i, j] = Stone(n=self._dimension, i=i, j=j, c=self._turn)
-        for group in adj_groups:
-            current_stone = group_to_cell[group]
-            if self[current_stone].color != opponent_color:
-                self._dsu.union_groups(int(self[current_stone]), int(self[i, j]))
-        self._history.append(str(self))
-        self.flip_turn()
-        return "success"
-        """
     
-
-    
-
-
 
 
         

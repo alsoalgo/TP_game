@@ -7,6 +7,9 @@ from colorama import Fore, Back, Style
 
 import os
 
+import pygame
+
+
 class View(object):
     _board = Board()
 
@@ -20,7 +23,6 @@ class View(object):
     @board.setter
     def board(self, value):
         self._board = value
-
 
     def draw_console(self):
         def border():
@@ -65,9 +67,9 @@ class View(object):
         beautiful_string += "\n"
         print(beautiful_string)
 
+    def draw_graphics(self):
+        pass
+
     
     def draw(self, type_="console"):
-        if type_ == "console":
-            self.draw_console()
-        else:
-            self.draw_graphics()
+        self.draw_console()
