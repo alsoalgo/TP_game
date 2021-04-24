@@ -1,62 +1,73 @@
-import math
+from .stone import *
+from .dsu import *
+from .board import *
 
-from .matrix import Matrix
-from .board import Board
+import colorama
+from colorama import Fore, Back, Style
 
+import os
 
-class View(Matrix):
-    CURSOR = 'X'
-    def __init__(self, board):
+class View(object):
+    _board = Board()
+
+    def __init__(self, board=Board()):
         self._board = board
-        self._cursor = (1, 1)
-        super(View, self).__init__(board._width, board._height)
-
-    def _reset(self):
-        self._array = [
-            [str(loc) for loc in row]
-            for row in self._board._array
-        ]
-
-    def redraw(self):
-        self._reset()
-
-    def _in_width(self, v):
-        return max(1, min(self._width, v))
-
-    def _in_height(self, v):
-        return max(1, min(self._height, v))
-
-    def cursor_up(self):
-        self._cursor = (
-            self._in_width(self._cursor[0]),
-            self._in_height(self._cursor[1] - 1),
-        )
-
-    def cursor_down(self):
-        self._cursor = (
-            self._in_width(self._cursor[0]),
-            self._in_height(self._cursor[1] + 1),
-        )
-
-    def cursor_left(self):
-        self._cursor = (
-            self._in_width(self._cursor[0] - 1),
-            self._in_height(self._cursor[1]),
-        )
-
-    def cursor_right(self):
-        self._cursor = (
-            self._in_width(self._cursor[0] + 1),
-            self._in_height(self._cursor[1]),
-        )
-
+    
     @property
-    def cursor(self):
-        return self._cursor
+    def board(self):
+        return self._board
+    
+    @board.setter
+    def board(self, value):
+        self._board = value
 
-    def __str__(self):
-        arr = self.copy
-        if self._cursor:
-            arr[self._cursor] = self.CURSOR
 
-        return '\n'.join([' '.join(row) for row in arr._array])
+    def draw_console(self):
+        def border():
+            prefix = Fore.WHITE + Back.WHITE
+            postfix = Style.RESET_ALL #u20DD U+25CF 25EF
+            return prefix + "\u2B1B" + postfix
+        
+        def board(): # board
+            prefix = Fore.BLACK + Back.BLACK
+            postfix = Style.RESET_ALL #u20DD U+25CF 25EF
+            return prefix + "\u2B1B" + postfix
+
+        def red(): # white
+            prefix = Fore.RED 
+            postfix = Style.RESET_ALL
+            return prefix + "\u2B1B" + postfix
+        
+        def blue(): # black
+            prefix = Fore.BLUE
+            postfix = Style.RESET_ALL
+            return prefix + "\u2B1B" + postfix
+
+        n = self._board._dimension
+
+        beautiful_string = ""
+        beautiful_string += border() * (n + 2)
+        beautiful_string += "\n"
+
+        for i in range(n):
+            beautiful_string += border()
+            for j in range(n):
+                stone = self._board[i, j]
+                if stone.color == "B": 
+                    beautiful_string += blue()
+                elif stone.color == "E":
+                    beautiful_string += board()
+                elif stone.color == "W":
+                    beautiful_string += red()
+            beautiful_string += border()
+            beautiful_string += "\n"
+        beautiful_string += border() * (n + 2)
+        beautiful_string += "\n"
+        print(beautiful_string)
+
+    
+    def draw(self, type_="console"):
+        if type_ == "console":
+            self.draw_console()
+        else:
+            self.draw_graphics()

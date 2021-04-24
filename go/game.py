@@ -1,37 +1,25 @@
-from .board import Board
-from .view import View
-from .utils import *
-import sys
-import time
+from .stone import *
+from .dsu import *
+from .board import *
+from .view import *
 
-class Game(object):
-    def __init__(self, dimension):
-        self._board = Board(dimension)
-        self._view = View(self._board)
+import os
 
-    def move(self):
-        self._board.move(*view.cursor)
-        self._view.draw(board)
 
-    def exit(self):
-        sys.exit(0)
-
-    def run(self):
-        KEYS = {
-            'w': self._view.cursor_up,
-            's': self._view.cursor_down,
-            'a': self._view.cursor_left,
-            'd': self._view.cursor_right,
-            ' ': self.move,
-            '\x1b': self.exit,
-        }
+class Game:
+    def __init__(self, graphics=False):
+        self._graphics = graphics
+    
+    def run(self, n):
+        board = Board(n)
         while True:
-            clear()
-            sys.stdout.write('{0}\n'.format(self._view))
-            c = getch()
-            print(c)
-            time.sleep(1)
-            try:
-                KEYS[c]()
-            except Exception:
-                pass
+            os.system('cls' if os.name == 'nt' else 'clear')
+            View(board).draw("console")
+            print("Current turn ", board.turn)
+            print("Scores:")
+            print("Black(Blue) :", board.score[0], ", White(Red) :", board.score[1])
+            move_i, move_j = map(int, input().split())
+            board.move(move_i, move_j)
+        
+
+        

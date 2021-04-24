@@ -1,35 +1,57 @@
-class StoneError(Exception):
-    pass
-
-
 class Stone(object):
+    _position = (0, 0)
+    _board_dimension = (0, 0)
+    _color = "E"
+    _dsu_group = 0
+    """
+    B == BLACK
+    E == EMPTY
+    W == WHITE
+    """
 
-    def __init__(self, type, x = 0, y = 0):
-        self.TYPES = {
-            'B': '*',
-            'W': 'o',
-            'E': '.',
-        }
-        if type not in self.TYPES:
-            raise StoneError("There's no type")
-        self._type = type
-        self._x = x
-        self._y = y
+    @staticmethod
+    def is_available(arguments, variable):
+        if variable in arguments:
+            return arguments[variable]
+        return -1
 
-    def __eq__(self, other):
-        return self._type == other._type
-
-    def __hash__(self):
-        return hash(self._type)
+    def __init__(self, **kwargs):
+        arguments = dict(kwargs)
+        self._board_dimension = int(Stone.is_available(arguments, "n"))
+        self._position = (int(Stone.is_available(arguments, "i")), 
+                            int(Stone.is_available(arguments, "j")))
+        self._color = Stone.is_available(arguments, "c")
+        self._dsu_group = self._board_dimension * self._position[0] + self._position[1]
 
     def __str__(self):
-        return self.TYPES[self._type]
+        return self._color
 
-    def __repr__(self):
-        return self._type.title()
+    def __int__(self):
+        return self._board_dimension * self._position[0] + self._position[1]
 
-    def get_x(self):
-        return self._x
+    @property
+    def position(self):
+        return self._position
+    
+    @position.setter
+    def position(self, value):
+        if isinstance(value, list):
+            value = tuple(value)
+        self._position = value
+    
+    @property
+    def color(self):
+        return self._color
+    
+    @color.setter
+    def color(self, value: str):
+        self._color = value
 
-    def get_y(self):
-        return self._y
+    @property
+    def group(self):
+        return self._dsu_group
+    
+    @group.setter
+    def group(self, value: int):
+        self._dsu_group = value
+    
