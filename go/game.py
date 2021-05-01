@@ -1,9 +1,12 @@
 from .stone import *
-from .dsu import *
 from .board import *
-from .view import *
+from .graphics import *
+from .handler import get_key as handle
 
 import os
+
+def clear():
+    pass
 
 
 class Game:
@@ -11,21 +14,21 @@ class Game:
         pass
         
     def run(self, n):
-        pygame.init()
-        pygame.mixer.init()
-        #screen = pygame.display.set_mode((600, 600))
-        #pygame.display.set_caption("My Game")
-        clock = pygame.time.Clock()
         board = Board(n)
-        view = View(board)
+        view = Graphics("graphics")
+        cursor = Cursor(n)
+        view.draw(board, cursor)
         while True:
-            os.system('cls' if os.name == 'nt' else 'clear')
-            view.draw("console")
-            print("Current turn ", board.turn)
-            print("Scores:")
-            print("Black(Blue) :", board.score[0], ", White(Red) :", board.score[1])
-            move_i, move_j = map(int, input().split())
-            board.move(move_i, move_j)
-        
-    
+            key_code = ord(handle())
+            if key_code in [119, 97, 115, 100]:
+                cursor.update(key_code)
+                view.clear()
+                view.draw(board, cursor)
+            elif key_code == 27:
+                view.exit()
+                break
+            elif key_code == 13:
+                board.move(*cursor.position)
+                view.clear()
+                view.draw(board, cursor)
         

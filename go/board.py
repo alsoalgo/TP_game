@@ -1,5 +1,4 @@
 from .stone import *
-from .dsu import DSU
 
 class Board(object):
     _score = [0, 0] # [B, W] BLM!!!
@@ -7,7 +6,6 @@ class Board(object):
     _map = [] # game map
     _turn = "B"
     _board_history = []
-    _dsu = DSU()
     _history = []
     _deleted = [] # array of 
 
@@ -26,7 +24,6 @@ class Board(object):
         self._map = []
         self._history = []
         self._board_history = []
-        self._dsu = DSU(self._dimension ** 2)
         for i in range(n):
             self._map.append([])
             for j in range(n):
@@ -67,7 +64,6 @@ class Board(object):
     def history(self):
         return self._board_history
     
-
     def check_ko(self, i: int, j: int):
         #check history
         #append (i, j) stone and then check representation
@@ -130,8 +126,6 @@ class Board(object):
         
 
     def move(self, i: int, j: int) -> str:
-        i -= 1
-        j -= 1
         #success - move is available and completed
         #ko - repeating of position
         #error - there's no such position or cell is occupied

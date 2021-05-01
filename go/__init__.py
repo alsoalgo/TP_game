@@ -1,4 +1,5 @@
 from .stone import *
 from .board import *
-from .view import *
+from .graphics import *
 from .game import *
+from .cursor import *
